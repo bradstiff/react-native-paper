@@ -123,7 +123,11 @@ it('uses the default anchorPosition of top', async () => {
   // componentDidUpdate isn't called by default in jest. Forcing the update
   // than triggers measureInWindow, which is how Menu decides where to show
   // itself.
-  screen.update(makeMenu(true));
+  await act(async () => {
+    screen.update(makeMenu(true));
+    // Menu waits a tick for Portal refs to be up-to-date.
+    await Promise.resolve();
+  });
 
   await waitFor(() => {
     const menu = screen.getByTestId('menu-view');
@@ -163,7 +167,11 @@ it('respects anchorPosition bottom', async () => {
     .spyOn(View.prototype, 'measureInWindow')
     .mockImplementation((fn) => fn(100, 100, 80, 32));
 
-  screen.update(makeMenu(true));
+  await act(async () => {
+    screen.update(makeMenu(true));
+    // Menu waits a tick for Portal refs to be up-to-date.
+    await Promise.resolve();
+  });
 
   await waitFor(() => {
     const menu = screen.getByTestId('menu-view');
