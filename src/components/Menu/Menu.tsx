@@ -397,7 +397,7 @@ const Menu = ({
           return;
         }
 
-        if (!display && prevRendered.current) {
+        if (!display) {
           hide();
         }
 
@@ -432,15 +432,23 @@ const Menu = ({
     if (prevVisible.current !== visible) {
       prevVisible.current = visible;
 
-      if (visible !== rendered) {
-        setRendered(visible);
+      if (visible) {
+        if (!rendered) {
+          // Mount the Portal before attempting to show.
+          setRendered(true);
+        }
+      } else {
+        // Keep the Portal mounted so the hide animation can finish.
+        updateVisibility(false);
       }
     }
-  }, [visible, rendered]);
+  }, [visible, rendered, updateVisibility]);
 
   React.useEffect(() => {
-    updateVisibility(rendered);
-  }, [rendered, updateVisibility]);
+    if (rendered && visible) {
+      updateVisibility(true);
+    }
+  }, [rendered, visible, updateVisibility]);
 
   // I don't know why but on Android measure function is wrong by 24
   const additionalVerticalValue = Platform.select({
@@ -641,6 +649,7 @@ const Menu = ({
             accessibilityLabel={overlayAccessibilityLabel}
             accessibilityRole="button"
             onPress={onDismiss}
+            pointerEvents={visible ? 'auto' : 'none'}
             style={styles.pressableOverlay}
           />
           <View
